@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plot Generator</title>
+    <style>
+       /* Add CSS styles for the waiting animation and thumbnail */
+        .loading {
+            display: none;
+        }
+
+        .thumbnail {
+            cursor: pointer;
+        }
+
+        /* CSS for the modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 80%;
+            max-height: 80%;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: #fff;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .loading::before {
+            content: "";
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+            margin-top: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <form id="plot-form">
+        <h2>Select Currency Pairs</h2>
+        <label><input type="checkbox" name="currency-pair" class="currency-pair" value="GBPJPY=X"> GBPJPY=X</label>
+        <label><input type="checkbox" name="currency-pair" class="currency-pair" value="EURJPY=x"> EURJPY=x</label>
+        <label><input type="checkbox" name="currency-pair" class="currency-pair" value="AUDJPY=x"> AUDJPY=x</label>
+        <label><input type="checkbox" id="select-all-currency"> Select All</label>
+        
+        <h2>Select Periods</h2>
+        <label><input type="checkbox" name="period" class="period" value="5m"> 5m</label>
+        <label><input type="checkbox" name="period" class="period" value="15m"> 15m</label>
+        <label><input type="checkbox" name="period" class="period" value="1h"> 1h</label>
+        <label><input type="checkbox" name="period" class="period" value="1d"> 1d</label>
+        <label><input type="checkbox" id="select-all-period"> Select All</label>
+
+        <br><br>
+        <button type="button" id="generate-button">Generate Plot</button>
+
+        <!-- Add a loading animation -->
+        <div class="loading"></div>
+    </form>
+
+    <!-- Thumbnail container -->
+	<div class="thumbnail-container">
+		<table>
+			<thead>
+				<tr>
+					<th>Thumbnail</th>
+					<th>Label</th>
+				</tr>
+			</thead>
+			<tbody>
+				<!-- Thumbnails will be added here -->
+			</tbody>
+		</table>
+	</div>
+    <!-- Modal for displaying the full image -->
+    <div id="image-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-modal">&times;</span>
+            <img id="full-image" src="" alt="Full Plot" style="width: 100%; height: 100%;">
+        </div>
+    </div>
+
+
+    <script>
+	     // Add an event listener to close the modal when clicking the close button
+    document.getElementById('close-modal').addEventListener('click', function () {
+        const imageModal = document.getElementById('image-modal');
+        imageModal.style.display = 'none';
+    });
+        document.getElementById('select-all-currency').addEventListener('change', function () {
+            const currencyCheckboxes = document.querySelectorAll('.currency-pair');
+            currencyCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+
+        document.getElementById('select-all-period').addEventListener('change', function () {
+            const periodCheckboxes = document.querySelectorAll('.period');
+            periodCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+
+        document.getElementById('generate-button').addEventListener('click', function () {
+			// Clear the children of the thumbnail container
+			const thumbnailContainer = document.querySelector('.thumbnail-container');
+			thumbnailContainer.innerHTML = `<table>
+												<thead>
+													<tr>
+														<th>Thumbnail</th>
+														<th>Label</th>
+													</tr>
+												</thead>
+												<tbody>
+													<!-- Thumbnails will be added here -->
+												</tbody>
+											</table>`;
+
+            const form = document.getElementById('plot-form');
+            const formData = new FormData(form);
+
+            // Show loading animation while waiting for response
+            const loadingAnimation = document.querySelector('.loading');
+            loadingAnimation.style.display = 'block';
+
+            fetch('/generate_plot', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+					// Update the IDs to match the HTML structure
+					const imageModal = document.getElementById('image-modal');
+					const fullImage = document.getElementById('full-image');
+					 // Calculate the number of rows and columns
+					const totalThumbnails = data.length;
+					const columnsPerRow = Math.ceil(Math.sqrt(totalThumbnails));
+					const rows = Math.ceil(totalThumbnails / columnsPerRow);
+
+					// ... (previous code)
+
+					// Create a container for the thumbnails (table body)
+					const thumbnailContainer = document.querySelector('.thumbnail-container tbody');
+
+					let dataIndex = 0; // Index to keep track of the data array
+					// Iterate through rows
+					for (let row = 0; row < rows; row++) {
+						const thumbnailRow = document.createElement('tr');
+
+						// Calculate the number of thumbnails in this row based on columnsPerRow
+						const thumbnailsInThisRow = Math.min(columnsPerRow, totalThumbnails - dataIndex);
+
+						// Iterate through thumbnails in this row
+						for (let col = 0; col < thumbnailsInThisRow; col++) {
+							const thumbnailData = data.pop();//data[dataIndex];
+							const thumbnailCell = document.createElement('td');
+							const thumbnailImg = document.createElement('img');
+							thumbnailImg.src = `data:image/png;base64,${thumbnailData.plot_data}`;
+							thumbnailImg.alt = 'Thumbnail';
+							thumbnailImg.style.maxWidth = '200px';
+							thumbnailImg.style.maxHeight = '200px';
+							thumbnailCell.appendChild(thumbnailImg);
+
+							const labelCell = document.createElement('td');
+							labelCell.innerText = `${thumbnailData.currency_pairs} tf:${thumbnailData.periods}`;
+
+							// Add the cells to the row
+							thumbnailRow.appendChild(thumbnailCell);
+							thumbnailRow.appendChild(labelCell);
+
+							// Add a click event to open the full image in a popup
+							thumbnailImg.addEventListener('click', function () {
+								// Display the modal with the full image
+								imageModal.style.display = 'block';
+
+								// Set the source of the full image to the plot data
+								fullImage.src = `data:image/png;base64,${thumbnailData.plot_data}`;
+							});
+
+							dataIndex++; // Move to the next data item
+						}
+
+						// Add the row to the table body
+						thumbnailContainer.appendChild(thumbnailRow);
+					}
+				});
+        });
+    </script>
+</body>
+</html>
