@@ -6,7 +6,7 @@ from sklearn.linear_model import SGDRegressor
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
-import plotly.graph_objects as go
+#import plotly.graph_objects as go
 
 def get_data(symbol,start = "",end = "",period="", interval=""):
     """Get historical stock prices for the given symbol"""
