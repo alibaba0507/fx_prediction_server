@@ -106,14 +106,14 @@ def generate_supp_ress_plot(currency_pairs):
         rr = []
         n1=2
         n2=2
-        maxRange =  len(df) - 1 if len(df) - 1 < 200 else 200
+        maxRange =  len(df) - 2 if len(df) - 2 < 200 else 200
         for row in range(3, maxRange): #len(df)-n2
             if support(df, row, n1, n2):
                 ss.append((row,df.Low[row]))
             if resistance(df, row, n1, n2):
                 rr.append((row,df.High[row]))
-        s = 0 if len(df) - 1 < 80 else 80
-        e = len(df) - 1 if len(df) - 1 < 200 else 200
+        s = 0 if len(df) - 2 < 80 else 80
+        e = len(df) - 2 if len(df) - 2 < 200 else 200
         dfpl = df[s:e]
         # Assuming dfpl is a DataFrame with 'Open', 'High', 'Low', and 'Close' columns
         # Also assuming ss and rr are lists of tuples with (x0, y0) coordinates
