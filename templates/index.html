@@ -102,10 +102,11 @@
 		<tr><td>
 		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="EURUSD=x"> EURUSD=x</label>
 		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="NZDUSD=x"> NZDUSD=x</label>
-		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="USDCAD=x"> USDCAD=x</label>
+		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="AUDUSD=x"> AUDUSD=x</label>
 		</td></tr>
 		<tr><td>
 		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="USDCHF=x"> USDCHF=x</label>
+		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="USDCAD=x"> USDCAD=x</label>
         <label><input type="checkbox" id="select-all-currency"> Select All</label>
 		</td></tr>
 		</tbody>
@@ -118,7 +119,12 @@
         <label><input type="checkbox" id="select-all-period"> Select All</label>
 
         <br><br>
-        
+		<select id="model-dropdown" name="model-select">
+		  <option value="SGD">SGDRegressor</option>
+		  <option value="SGD_SR">SGDRegressor and S/R Lines</option>
+		  <option value="LSTM">LSTM Model</option>
+		</select>
+        <br><br>
 		<h2>Shift Backwards Period</h2>
 		<input type="number" id="shift-backwards-period" name="shift-backwards-period" min="0" value="0">
 
