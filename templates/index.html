@@ -59,23 +59,58 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+		
+		/* CSS for the loading modal */
+        .loading-modal {
+            display: none;
+            position: fixed;
+            z-index: 2; /* Higher z-index than the existing modal */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5); /* Semi-transparent background */
+        }
+
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 <body>
     <form id="plot-form">
         <h2>Select Currency Pairs</h2>
+		<table>
+		<tbody>
+		<tr><td>
         <label><input type="checkbox" name="currency-pair" class="currency-pair" value="GBPJPY=X"> GBPJPY=X</label>
         <label><input type="checkbox" name="currency-pair" class="currency-pair" value="EURJPY=x"> EURJPY=x</label>
         <label><input type="checkbox" name="currency-pair" class="currency-pair" value="AUDJPY=x"> AUDJPY=x</label>
+		</td></tr>
+		<tr><td>
 		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="CHFJPY=x"> CHFJPY=x</label>
 		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="USDJPY=x"> USDJPY=x</label>
 		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="GBPUSD=x"> GBPUSD=x</label>
+		</td></tr>
+		<tr><td>
 		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="EURUSD=x"> EURUSD=x</label>
 		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="NZDUSD=x"> NZDUSD=x</label>
-		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="USDCAD=x"> USDCAD=x</label>
+		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="AUDUSD=x"> AUDUSD=x</label>
+		</td></tr>
+		<tr><td>
 		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="USDCHF=x"> USDCHF=x</label>
+		<label><input type="checkbox" name="currency-pair" class="currency-pair" value="USDCAD=x"> USDCAD=x</label>
         <label><input type="checkbox" id="select-all-currency"> Select All</label>
-        
+		</td></tr>
+		</tbody>
+        <table>
         <h2>Select Periods</h2>
         <label><input type="checkbox" name="period" class="period" value="5m"> 5m</label>
         <label><input type="checkbox" name="period" class="period" value="15m"> 15m</label>
@@ -84,21 +119,35 @@
         <label><input type="checkbox" id="select-all-period"> Select All</label>
 
         <br><br>
-        <button type="button" id="generate-button">Generate Plot</button>
+		<select id="model-dropdown" name="model-select">
+		  <option value="SGD">SGDRegressor</option>
+		  <option value="SGD_SR">SGDRegressor and S/R Lines</option>
+		  <option value="LSTM">LSTM Model</option>
+		</select>
+        <br><br>
+		<h2>Shift Backwards Period</h2>
+		<input type="number" id="shift-backwards-period" name="shift-backwards-period" min="0" value="0">
 
-        <!-- Add a loading animation -->
-        <div class="loading"></div>
+		<h2>How Many Times to Offset</h2>
+		<input type="number" id="offset-times" name="offset-times" min="1" value="1">
+
+		<br><br>
+		<button type="button" id="generate-button">Generate Plot</button>
+
+		<!-- Add a loading animation -->
+        <!-- div class="loading"></div -->
     </form>
-
+     <!-- Loading modal -->
+    <div class="loading-modal" id="loading-modal">
+        <div class="loading-spinner">
+            <div class="loading"></div>
+            <!-- You can add a loading message here if desired -->
+        </div>
+    </div>
     <!-- Thumbnail container -->
 	<div class="thumbnail-container">
 		<table>
-			<thead>
-				<tr>
-					<th>Thumbnail</th>
-					<th>Label</th>
-				</tr>
-			</thead>
+			
 			<tbody>
 				<!-- Thumbnails will be added here -->
 			</tbody>
@@ -137,12 +186,6 @@
 			// Clear the children of the thumbnail container
 			const thumbnailContainer = document.querySelector('.thumbnail-container');
 			thumbnailContainer.innerHTML = `<table>
-												<thead>
-													<tr>
-														<th>Thumbnail</th>
-														<th>Label</th>
-													</tr>
-												</thead>
 												<tbody>
 													<!-- Thumbnails will be added here -->
 												</tbody>
@@ -152,15 +195,22 @@
             const formData = new FormData(form);
 
             // Show loading animation while waiting for response
-            const loadingAnimation = document.querySelector('.loading');
+            const loadingAnimation = document.getElementById('loading-modal');
             loadingAnimation.style.display = 'block';
 
             fetch('/generate_plot', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response =>  {
+				if (!response.ok) {
+				    loadingAnimation.style.display = 'none';
+					throw new Error('Network response was not ok');
+				}
+				return response.json();
+			})
             .then(data => {
+			         loadingAnimation.style.display = 'none';
 					// Update the IDs to match the HTML structure
 					const imageModal = document.getElementById('image-modal');
 					const fullImage = document.getElementById('full-image');
@@ -184,21 +234,36 @@
 
 						// Iterate through thumbnails in this row
 						for (let col = 0; col < thumbnailsInThisRow; col++) {
-							const thumbnailData = data.pop();//data[dataIndex];
+							const thumbnailData = data.pop(); // data[dataIndex];
 							const thumbnailCell = document.createElement('td');
+
+							// Create a div to contain both the image and text
+							const thumbnailDiv = document.createElement('div');
+							thumbnailDiv.style.textAlign = 'center';
+
+							// Create the thumbnail image
 							const thumbnailImg = document.createElement('img');
 							thumbnailImg.src = `data:image/png;base64,${thumbnailData.plot_data}`;
 							thumbnailImg.alt = 'Thumbnail';
 							thumbnailImg.style.maxWidth = '200px';
 							thumbnailImg.style.maxHeight = '200px';
-							thumbnailCell.appendChild(thumbnailImg);
 
-							const labelCell = document.createElement('td');
-							labelCell.innerText = `${thumbnailData.currency_pairs} tf:${thumbnailData.periods}`;
+							// Append the image to the div
+							thumbnailDiv.appendChild(thumbnailImg);
 
-							// Add the cells to the row
+							// Create a div for the text and add it under the image
+							const textDiv = document.createElement('div');
+							textDiv.innerText = `${thumbnailData.currency_pairs} tf:${thumbnailData.periods}`;
+							textDiv.style.textAlign = 'center';
+
+							// Append the text div to the div containing the image
+							thumbnailDiv.appendChild(textDiv);
+
+							// Add the div to the cell
+							thumbnailCell.appendChild(thumbnailDiv);
+
+							// Add the cell to the row
 							thumbnailRow.appendChild(thumbnailCell);
-							thumbnailRow.appendChild(labelCell);
 
 							// Add a click event to open the full image in a popup
 							thumbnailImg.addEventListener('click', function () {
@@ -212,9 +277,15 @@
 							dataIndex++; // Move to the next data item
 						}
 
+
 						// Add the row to the table body
 						thumbnailContainer.appendChild(thumbnailRow);
 					}
+				})
+				.catch(error => {
+				     loadingAnimation.style.display = 'none';
+					// Handle any errors that occurred during the fetch operation
+					console.error('Fetch error:', error);
 				});
         });
     </script>
