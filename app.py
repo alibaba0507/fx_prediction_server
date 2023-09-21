@@ -36,8 +36,7 @@ def generate_plot_route():
     # Return the plot data as JSON
     
     return jsonify(merged_list)
-'''
+
 if __name__ == '__main__':
     #app.run(debug=True)
-    app.run()
-'''
+    app.run(host='0.0.0.0', port=8000)
