@@ -111,26 +111,26 @@
 		</td></tr>
 		</tbody>
         <table>
+		<div style="display:none">
         <h2>Select Periods</h2>
         <label><input type="checkbox" name="period" class="period" value="5m"> 5m</label>
         <label><input type="checkbox" name="period" class="period" value="15m"> 15m</label>
         <label><input type="checkbox" name="period" class="period" value="1h"> 1h</label>
         <label><input type="checkbox" name="period" class="period" value="1d"> 1d</label>
         <label><input type="checkbox" id="select-all-period"> Select All</label>
-
+        </div>
         <br><br>
 		<select id="model-dropdown" name="model-select">
-		  <option value="SGD">SGDRegressor</option>
-		  <option value="SGD_SR">SGDRegressor and S/R Lines</option>
-		  <option value="LSTM">LSTM Model</option>
+		  <option value="SRL">Support Resistance Lines</option>
 		</select>
         <br><br>
+		<div style="display:none">
 		<h2>Shift Backwards Period</h2>
 		<input type="number" id="shift-backwards-period" name="shift-backwards-period" min="0" value="0">
 
 		<h2>How Many Times to Offset</h2>
 		<input type="number" id="offset-times" name="offset-times" min="1" value="1">
-
+        </div>
 		<br><br>
 		<button type="button" id="generate-button">Generate Plot</button>
 
