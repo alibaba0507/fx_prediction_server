@@ -138,6 +138,7 @@ def generate_supp_ress_plot(currency_pairs):
         ax.set_xlabel('Date')
         ax.set_ylabel('Price')
         ax.set_title(f"Candlestick {c} Chart with Lines")
+        
         ax.legend()
         # Save the plot to a BytesIO object
         img_buffer = BytesIO()
