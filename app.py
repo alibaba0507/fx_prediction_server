@@ -3,6 +3,7 @@ from plot_generator import generate_plot,generate_supp_ress_plot  # Import the g
 from lstm_model_gen import generate_lstm_plot
 app = Flask(__name__)
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
