@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plot Generator</title>
     <style>
+		/* Default styles for larger screens */
+		table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+
+		/* Responsive styles for smaller screens */
+		@media (max-width: 768px) {
+			table {
+				font-size: 14px; /* Adjust font size for readability */
+			}
+			th, td {
+				padding: 8px; /* Add padding to table cells for touch-friendly experience */
+			}
+		}
+		.table-container {
+			overflow-x: auto;
+		}
        /* Add CSS styles for the waiting animation and thumbnail */
         .loading {
             display: none;
@@ -145,7 +163,7 @@
         </div>
     </div>
     <!-- Thumbnail container -->
-	<div class="thumbnail-container">
+	<div class="thumbnail-container table-container">
 		<table>
 			
 			<tbody>

@@ -33,7 +33,7 @@ def create_sequences(data, sequence_length, fields=['Open', 'High', 'Low', 'Clos
 
 def build_model(hp):
     model = keras.Sequential()
-    model.add(layers.LSTM(units=hp.Int('units', min_value=32, max_value=512, step=32),
+    model.add(layers.LSTM(units=hp.Int('units', min_value=32, max_value=1024, step=64),
                            input_shape=(sequence_length, 4)))
     model.add(layers.Dense(1))
     model.compile(optimizer='adam', loss='mean_squared_error')
@@ -107,12 +107,12 @@ def generate_lstm_plot(currency_pairs, periods):
             X, y = create_sequences(data[['Open', 'High', 'Low', 'Close']], sequence_length, ['Open', 'High', 'Low', 'Close'])
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
             #best_model = None
-            if best_model is None:
-                print("-----------------")
-                best_model = None
-                best_model = find_best_model(X_train, y_train, X_test, y_test,1,5)
-            else:
-                best_model = train_best_model(best_model,X_train, y_train, X_test, y_test,5 )
+            #if best_model is None:
+            print("-----------------")
+            best_model = None
+            best_model = find_best_model(X_train, y_train, X_test, y_test,5,15)
+            #else:
+            #    best_model = train_best_model(best_model,X_train, y_train, X_test, y_test,5,15 )
             recent_data = data[['Open', 'High', 'Low', 'Close']][-sequence_length:].values
             predicted_values = []
             num_steps_to_predict = 15
@@ -146,7 +146,7 @@ def generate_lstm_plot(currency_pairs, periods):
             plt.plot(range(len(last_column_actual_values), len(last_column_actual_values) + len(last_column_values)), last_column_values, label='Predicted Values', linestyle='--')
             plt.xlabel('Time')
             plt.ylabel('Close Price')
-            plt.title(f"Actual, Predicted, and Forecasted Close Prices for {c}")
+            plt.title(f"Actual and Forecasted Close {p} Prices for {c}")
             plt.legend()
             plt.grid(True)   
             # Save the plot to a BytesIO object
