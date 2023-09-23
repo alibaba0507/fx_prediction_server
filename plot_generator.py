@@ -135,9 +135,10 @@ def generate_supp_ress_plot(currency_pairs):
             ax.axhline(y=r[1], color='RoyalBlue', linewidth=1)
 
         # Customize the appearance of the chart as needed
+        chart_title = f"Candlestick {c} Chart with Lines"
         ax.set_xlabel('Date')
         ax.set_ylabel('Price')
-        ax.set_title(f"Candlestick {c} Chart with Lines")
+        ax.set_title(chart_title)
         
         ax.legend()
         # Save the plot to a BytesIO object
