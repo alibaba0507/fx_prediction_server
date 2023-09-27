@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from plot_generator import generate_plot,generate_supp_ress_plot  # Import the generate_plot function
+from plot_generator import generate_plot,generate_supp_ress_plot,generate_trianlges_plot  # Import the generate_plot function
 from lstm_model_gen import generate_lstm_plot
 app = Flask(__name__)
 
@@ -27,6 +27,8 @@ def generate_plot_route():
     if model_type[0] == 'LSTM': 
         lstm_plot = generate_lstm_plot(currency_pairs, periods)
         merged_list = lstm_plot #plot_lines + plot_data
+    if model_type[0] == 'TRIANGLES':
+        triangles_plot = generate_trianlges_plot(currency_pairs, periods,shift)
     
     # Return the plot data as JSON
     return jsonify(merged_list)

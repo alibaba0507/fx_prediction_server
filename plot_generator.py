@@ -6,6 +6,7 @@ from sklearn.linear_model import SGDRegressor
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
+from scipy.stats import linregress
 #import plotly.graph_objects as go
 
 def get_data(symbol,start = "",end = "",period="", interval=""):
@@ -150,7 +151,123 @@ def generate_supp_ress_plot(currency_pairs):
                     'periods': "1d"
                 })
     return data_plot
-        
+    
+def pivotid(df1, l, n1, n2): #n1 n2 before and after candle l
+    if l-n1 < 0 or l+n2 >= len(df1):
+        return 0
+
+    pividlow=1
+    pividhigh=1
+    for i in range(l-n1, l+n2+1):
+        if(df1.low[l]>df1.low[i]):
+            pividlow=0
+        if(df1.high[l]<df1.high[i]):
+            pividhigh=0
+    if pividlow and pividhigh:
+        return 3
+    elif pividlow:
+        return 1
+    elif pividhigh:
+        return 2
+    else:
+        return 0
+
+def pointpos(x):
+    if x['pivot']==1:
+        return x['low']-1e-3
+    elif x['pivot']==2:
+        return x['high']+1e-3
+    else:
+        return np.nan
+def triangle_plot(dfpl,xxmin,xxmax,minim,maxim):
+    
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.plot(dfpl.index, dfpl['open'], color='r', marker='o', linestyle='-', label='Open')
+    ax.plot(dfpl.index, dfpl['close'], color='g', marker='o', linestyle='-', label='Close')
+    ax.plot(dfpl.index, dfpl['high'], color='b', marker='o', linestyle='-', label='High')
+    ax.plot(dfpl.index, dfpl['low'], color='y', marker='o', linestyle='-', label='Low')
+
+    # Add pivot points as markers
+    pivot_points = dfpl[dfpl['pointpos'] == 1]
+    ax.scatter(pivot_points.index, pivot_points['low'], color='MediumPurple', label='Pivot', s=40)
+    if all(arr.size > 0 for arr in [xxmin, xxmax, minim, maxim]):
+        slmin, intercmin, rmin, pmin, semin = linregress(xxmin, minim)
+        slmax, intercmax, rmax, pmax, semax = linregress(xxmax, maxim)
+
+        #print(rmin, rmax)
+        # Fitting slopes to meet highest or lowest candle point in time slice
+        xxmin = np.append(xxmin, xxmin[-1] + 15)
+        ax.plot(xxmin, slmin * xxmin + intercmin, linestyle='--', label='Min Slope')
+        xxmax = np.append(xxmax, xxmax[-1] + 15)
+        ax.plot(xxmax, slmax * xxmax + intercmax, linestyle='--', label='Max Slope')
+
+    ax.set_xlabel('Time')
+    ax.set_ylabel('Price')
+    ax.set_title('Candlestick Chart with Pivot Points')
+    ax.legend()
+
+    # Save the plot to a BytesIO object
+    img_buffer = BytesIO()
+    plt.savefig(img_buffer, format='png')
+    img_buffer.seek(0)
+    img_data = base64.b64encode(img_buffer.read()).decode('utf-8')
+    plt.close(fig)  # Close the figure to release resources
+
+    return img_data        
+def generate_trianlges_plot(currency_pairs, periods,shift):
+    data_plot = []
+    charts_params = [{'5m':'59d'},{'15m':'59d'},{'1h':'729d'},{'1d':'30000d'}]
+    # Ensure 'shift' is an integer
+    if isinstance(shift, list):
+        shift = shift[0]
+    # Convert 'shift_str' to an integer
+    try:
+        shift = int(shift)
+    except ValueError:
+        # Handle the case where 'shift_str' cannot be converted to an integer
+        print("Error: 'shift_str' cannot be converted to an integer.")
+        # You can assign a default value or take appropriate action here
+    for c in currency_pairs:
+        #print(c)
+        for p in periods:
+            period = [item[p] for item in charts_params if p in item]
+            df = get_data(c,"","",period[0],p)
+            df.columns=['open', 'high', 'low', 'close', 'Adj Close','volume']
+            df.reset_index(drop=True, inplace=True)
+            df.isna().sum()
+            
+            df['pivot'] = df.apply(lambda x: pivotid(df, x.name,2,2), axis=1)
+            df['pointpos'] = df.apply(lambda row: pointpos(row), axis=1)
+            #print(df.head(10))
+            backcandles = 5 if shift < 5 else shift
+            candleid = len(df) - 1
+            maxim = np.array([])
+            minim = np.array([])
+            xxmin = np.array([])
+            xxmax = np.array([])
+            print(backcandles , shift , candleid)
+            for i in range(candleid - backcandles, candleid + 1):
+                print(df.iloc[i].pivot)
+                if df.iloc[i].pivot == 1:
+                    minim = np.append(minim, df.iloc[i].low)
+                    xxmin = np.append(xxmin, i)  # could be i instead df.iloc[i].name
+                if df.iloc[i].pivot == 2:
+                    maxim = np.append(maxim, df.iloc[i].high)
+                    xxmax = np.append(xxmax, i)  # df.iloc[i].name
+
+            
+
+            dfpl = df[candleid - backcandles - 10:candleid + backcandles + 10]
+            print("xxmin:", xxmin)
+            print("minim:", minim)
+            # Call the function to generate the plot
+            img_data = triangle_plot(dfpl,xxmin,xxmax,minim,maxim)
+            data_plot.append({
+                        'plot_data': img_data,
+                        'currency_pairs': f"{c} Triangle Patterns",
+                        'periods': "1d"
+                    })
+    return data_plot
 def generate_plot(currency_pairs, periods, shift, loop):
     data_plot = []
     charts_params = [{'5m':'59d'},{'15m':'59d'},{'1h':'729d'},{'1d':'30000d'}]
