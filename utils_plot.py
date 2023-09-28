@@ -1,4 +1,5 @@
 import yfinance as yf
+import numpy as np
 
 def get_data(symbol,start = "",end = "",period="", interval=""):
     """Get historical stock prices for the given symbol"""
