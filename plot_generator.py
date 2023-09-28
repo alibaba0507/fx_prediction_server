@@ -127,9 +127,9 @@ def generate_trianlges_plot(currency_pairs, periods,shift):
             minim = np.array([])
             xxmin = np.array([])
             xxmax = np.array([])
-            print(backcandles , shift , candleid)
+            #print(backcandles , shift , candleid)
             for i in range(candleid - backcandles, candleid + 1):
-                print(df.iloc[i].pivot)
+                #print(df.iloc[i].pivot)
                 if df.iloc[i].pivot == 1:
                     minim = np.append(minim, df.iloc[i].low)
                     xxmin = np.append(xxmin, i)  # could be i instead df.iloc[i].name
@@ -140,8 +140,8 @@ def generate_trianlges_plot(currency_pairs, periods,shift):
             
 
             dfpl = df[candleid - backcandles - 10:candleid + backcandles + 10]
-            print("xxmin:", xxmin)
-            print("minim:", minim)
+            #print("xxmin:", xxmin)
+            #print("minim:", minim)
             # Call the function to generate the plot
             img_data = triangle_plot(dfpl,xxmin,xxmax,minim,maxim)
             data_plot.append({
