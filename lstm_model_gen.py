@@ -146,7 +146,7 @@ def generate_lstm_plot(currency_pairs, periods):
             plt.plot(range(len(last_column_actual_values), len(last_column_actual_values) + len(last_column_values)), last_column_values, label='Predicted Values', linestyle='--')
             plt.xlabel('Time')
             plt.ylabel('Close Price')
-            plt.title(f"Actual, Predicted, and Forecasted Close Prices for {c}")
+            plt.title(f"LSTM Forecasted Close Prices for {c} TF {p}")
             plt.legend()
             plt.grid(True)   
             # Save the plot to a BytesIO object
