@@ -109,8 +109,8 @@ def generate_lstm_plot(currency_pairs, periods):
             #best_model = None
             if best_model is None:
                 print("-----------------")
-                best_model = None
-                best_model = find_best_model(X_train, y_train, X_test, y_test,1,5)
+                #best_model = None
+                best_model = find_best_model(X_train, y_train, X_test, y_test,5,15)
             else:
                 best_model = train_best_model(best_model,X_train, y_train, X_test, y_test,5 )
             recent_data = data[['Open', 'High', 'Low', 'Close']][-sequence_length:].values
