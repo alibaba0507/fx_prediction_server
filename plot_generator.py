@@ -145,6 +145,7 @@ def generate_supp_ress_plot(currency_pairs):
         plt.savefig(img_buffer, format='png')
         img_buffer.seek(0)
         img_data = base64.b64encode(img_buffer.read()).decode('utf-8')
+        print(img_data)
         data_plot.append({
                     'plot_data': img_data,
                     'currency_pairs': f"{c} S/R Lines",
@@ -179,14 +180,14 @@ def pointpos(x):
         return x['high']+1e-3
     else:
         return np.nan
-def triangle_plot(dfpl,xxmin,xxmax,minim,maxim):
-    
+def triangle_plot(dfpl,xxmin,xxmax,minim,maxim,pair,timeframe):
+    plt.clf()
     fig, ax = plt.subplots(figsize=(12, 6))
     ax.plot(dfpl.index, dfpl['open'], color='r', marker='o', linestyle='-', label='Open')
     ax.plot(dfpl.index, dfpl['close'], color='g', marker='o', linestyle='-', label='Close')
     ax.plot(dfpl.index, dfpl['high'], color='b', marker='o', linestyle='-', label='High')
     ax.plot(dfpl.index, dfpl['low'], color='y', marker='o', linestyle='-', label='Low')
-
+    
     # Add pivot points as markers
     pivot_points = dfpl[dfpl['pointpos'] == 1]
     ax.scatter(pivot_points.index, pivot_points['low'], color='MediumPurple', label='Pivot', s=40)
@@ -200,10 +201,10 @@ def triangle_plot(dfpl,xxmin,xxmax,minim,maxim):
         ax.plot(xxmin, slmin * xxmin + intercmin, linestyle='--', label='Min Slope')
         xxmax = np.append(xxmax, xxmax[-1] + 15)
         ax.plot(xxmax, slmax * xxmax + intercmax, linestyle='--', label='Max Slope')
-
+    
     ax.set_xlabel('Time')
     ax.set_ylabel('Price')
-    ax.set_title('Candlestick Chart with Pivot Points')
+    ax.set_title(f"Candlestick {pair} Chart {timeframe} with triangles patterns")
     ax.legend()
 
     # Save the plot to a BytesIO object
@@ -211,7 +212,8 @@ def triangle_plot(dfpl,xxmin,xxmax,minim,maxim):
     plt.savefig(img_buffer, format='png')
     img_buffer.seek(0)
     img_data = base64.b64encode(img_buffer.read()).decode('utf-8')
-    plt.close(fig)  # Close the figure to release resources
+    #print(img_data)
+    #plt.close(fig)  # Close the figure to release resources
 
     return img_data        
 def generate_trianlges_plot(currency_pairs, periods,shift):
@@ -245,9 +247,9 @@ def generate_trianlges_plot(currency_pairs, periods,shift):
             minim = np.array([])
             xxmin = np.array([])
             xxmax = np.array([])
-            print(backcandles , shift , candleid)
+            #print(backcandles , shift , candleid)
             for i in range(candleid - backcandles, candleid + 1):
-                print(df.iloc[i].pivot)
+                #print(df.iloc[i].pivot)
                 if df.iloc[i].pivot == 1:
                     minim = np.append(minim, df.iloc[i].low)
                     xxmin = np.append(xxmin, i)  # could be i instead df.iloc[i].name
@@ -258,14 +260,14 @@ def generate_trianlges_plot(currency_pairs, periods,shift):
             
 
             dfpl = df[candleid - backcandles - 10:candleid + backcandles + 10]
-            print("xxmin:", xxmin)
-            print("minim:", minim)
+            #print("xxmin:", xxmin)
+            #print("minim:", minim)
             # Call the function to generate the plot
-            img_data = triangle_plot(dfpl,xxmin,xxmax,minim,maxim)
+            img_data = triangle_plot(dfpl,xxmin,xxmax,minim,maxim,c,p)
             data_plot.append({
                         'plot_data': img_data,
                         'currency_pairs': f"{c} Triangle Patterns",
-                        'periods': "1d"
+                        'periods': f"{p}"
                     })
     return data_plot
 def generate_plot(currency_pairs, periods, shift, loop):

@@ -29,7 +29,7 @@ def generate_plot_route():
         merged_list = lstm_plot #plot_lines + plot_data
     if model_type[0] == 'TRIANGLES':
         triangles_plot = generate_trianlges_plot(currency_pairs, periods,shift)
-    
+        merged_list = triangles_plot
     # Return the plot data as JSON
     return jsonify(merged_list)
 
