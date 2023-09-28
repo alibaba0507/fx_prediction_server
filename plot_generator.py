@@ -61,7 +61,7 @@ def generate_supp_ress_plot(currency_pairs):
     return data_plot
     
 
-def triangle_plot(dfpl,xxmin,xxmax,minim,maxim):
+def triangle_plot(dfpl,xxmin,xxmax,minim,maxim,pair,tf):
     
     fig, ax = plt.subplots(figsize=(12, 6))
     ax.plot(dfpl.index, dfpl['open'], color='r', marker='o', linestyle='-', label='Open')
@@ -85,7 +85,7 @@ def triangle_plot(dfpl,xxmin,xxmax,minim,maxim):
 
     ax.set_xlabel('Time')
     ax.set_ylabel('Price')
-    ax.set_title('Candlestick Chart with Pivot Points')
+    ax.set_title(f"Candlestick {pair} Chart {tf} with triangle patterns")
     ax.legend()
 
     # Save the plot to a BytesIO object
@@ -143,11 +143,11 @@ def generate_trianlges_plot(currency_pairs, periods,shift):
             #print("xxmin:", xxmin)
             #print("minim:", minim)
             # Call the function to generate the plot
-            img_data = triangle_plot(dfpl,xxmin,xxmax,minim,maxim)
+            img_data = triangle_plot(dfpl,xxmin,xxmax,minim,maxim,c,p)
             data_plot.append({
                         'plot_data': img_data,
                         'currency_pairs': f"{c} Triangle Patterns",
-                        'periods': "1d"
+                        'periods': f"{p}"
                     })
     return data_plot
 def generate_plot(currency_pairs, periods, shift, loop):
