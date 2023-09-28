@@ -1,103 +1,11 @@
 from io import BytesIO
 import base64
-import yfinance as yf
 import numpy as np
-from sklearn.linear_model import SGDRegressor
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.preprocessing import StandardScaler
+from utils_plot import get_data,support,resistance,pivotid,pointpos
 import matplotlib.pyplot as plt
 from scipy.stats import linregress
 #import plotly.graph_objects as go
 
-def get_data(symbol,start = "",end = "",period="", interval=""):
-    """Get historical stock prices for the given symbol"""
-    #stock_data = yf.download(tickers=symbol, start="2019-01-01", end="2023-04-27")
-    if start != "" and end != "":
-      stock_data = yf.download(tickers=symbol, start=start, end=end)
-    if start != "" and end != "" and interval != "":
-      stock_data = yf.download(tickers=symbol, start=start, end=end,interval=interval)
-    if period != "" and interval != "":
-      stock_data = yf.download(tickers=symbol, period=period, interval=interval)
-    stock_data.reset_index(drop=True, inplace=True)
-    return stock_data
- 
-def support(df1, l, n1, n2): #n1 n2 before and after candle l
-    for i in range(l-n1+1, l+1):
-        if(df1.Low[i]>df1.Low[i-1]):
-            return 0
-    for i in range(l+1,l+n2+1):
-        if(df1.Low[i]<df1.Low[i-1]):
-            return 0
-    return 1
-
-#support(df,46,3,2)
-
-def resistance(df1, l, n1, n2): #n1 n2 before and after candle l
-    for i in range(l-n1+1, l+1):
-        if(df1.High[i]<df1.High[i-1]):
-            return 0
-    for i in range(l+1,l+n2+1):
-        if(df1.High[i]>df1.High[i-1]):
-            return 0
-    return 1
-#resistance(df, 30, 3, 5)
-
-def generate_supp_ress_plot_v1(currency_pairs):
-    data_plot = []
-    for c in currency_pairs:
-        df = get_data(c,"","","50d","1d")
-        ss = []
-        rr = []
-        n1=2
-        n2=2
-        maxRange =  len(df) - 1 if len(df) - 1 < 200 else 200
-        for row in range(3, maxRange): #len(df)-n2
-            if support(df, row, n1, n2):
-                ss.append((row,df.Low[row]))
-            if resistance(df, row, n1, n2):
-                rr.append((row,df.High[row]))
-        s = 0 if len(df) - 1 < 80 else 80
-        e = len(df) - 1 if len(df) - 1 < 200 else 200
-        dfpl = df[s:e]
-        fig = go.Figure(data=[go.Candlestick(x=dfpl.index,
-            open=dfpl['Open'],
-            high=dfpl['High'],
-            low=dfpl['Low'],
-            close=dfpl['Close'])])
-
-        c=0
-        while (1):
-            if(c>len(ss)-1 ):
-                break
-            fig.add_shape(type='line', x0=ss[c][0], y0=ss[c][1],
-                x1=e,
-                y1=ss[c][1],
-                line=dict(color="MediumPurple",width=3)
-                )
-            c+=1
-
-        c=0
-        while (1):
-            if(c>len(rr)-1 ):
-                break
-            fig.add_shape(type='line', x0=rr[c][0], y0=rr[c][1],
-                x1=e,
-                y1=rr[c][1],
-                line=dict(color="RoyalBlue",width=1)
-                )
-            c+=1
-        # Save the figure as an image
-        img_buffer = BytesIO()
-        fig.write_image(img_buffer, format="png")
-
-        # Encode the image to base64
-        img_data = base64.b64encode(img_buffer.getvalue()).decode('utf-8')    
-        data_plot.append({
-                    'plot_data': img_data,
-                    'currency_pairs': f"{c} S/R Lines",
-                    'periods': "1d"
-                })
-    return data_plot
 
 def generate_supp_ress_plot(currency_pairs):
     data_plot = []
@@ -152,33 +60,7 @@ def generate_supp_ress_plot(currency_pairs):
                 })
     return data_plot
     
-def pivotid(df1, l, n1, n2): #n1 n2 before and after candle l
-    if l-n1 < 0 or l+n2 >= len(df1):
-        return 0
 
-    pividlow=1
-    pividhigh=1
-    for i in range(l-n1, l+n2+1):
-        if(df1.low[l]>df1.low[i]):
-            pividlow=0
-        if(df1.high[l]<df1.high[i]):
-            pividhigh=0
-    if pividlow and pividhigh:
-        return 3
-    elif pividlow:
-        return 1
-    elif pividhigh:
-        return 2
-    else:
-        return 0
-
-def pointpos(x):
-    if x['pivot']==1:
-        return x['low']-1e-3
-    elif x['pivot']==2:
-        return x['high']+1e-3
-    else:
-        return np.nan
 def triangle_plot(dfpl,xxmin,xxmax,minim,maxim):
     
     fig, ax = plt.subplots(figsize=(12, 6))
