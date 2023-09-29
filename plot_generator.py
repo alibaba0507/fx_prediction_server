@@ -2,6 +2,7 @@ from io import BytesIO
 import base64
 import numpy as np
 from utils_plot import get_data,support,resistance,pivotid,pointpos
+import matplotlib
 import matplotlib.pyplot as plt
 from scipy.stats import linregress
 #import plotly.graph_objects as go
