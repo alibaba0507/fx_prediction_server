@@ -8,6 +8,7 @@ from scipy.stats import linregress
 
 
 def generate_supp_ress_plot(currency_pairs):
+    matplotlib.use('Agg')  # Use the Agg backend
     data_plot = []
     for c in currency_pairs:
         df = get_data(c,"","","50d","1d")
@@ -62,7 +63,7 @@ def generate_supp_ress_plot(currency_pairs):
     
 
 def triangle_plot(dfpl,xxmin,xxmax,minim,maxim,pair,tf):
-    
+    matplotlib.use('Agg')  # Use the Agg backend
     fig, ax = plt.subplots(figsize=(12, 6))
     ax.plot(dfpl.index, dfpl['open'], color='r', marker='o', linestyle='-', label='Open')
     ax.plot(dfpl.index, dfpl['close'], color='g', marker='o', linestyle='-', label='Close')
@@ -151,6 +152,7 @@ def generate_trianlges_plot(currency_pairs, periods,shift):
                     })
     return data_plot
 def generate_plot(currency_pairs, periods, shift, loop):
+    matplotlib.use('Agg')  # Use the Agg backend
     data_plot = []
     charts_params = [{'5m':'59d'},{'15m':'59d'},{'1h':'729d'},{'1d':'30000d'}]
     # Initialize the SGDRegressor model with appropriate parameters
@@ -215,6 +217,7 @@ def generate_plot(currency_pairs, periods, shift, loop):
     # Return the plot data and other relevant information as a dictionary
     return data_plot
 def generate_plot_v1(currency_pairs, periods):
+    matplotlib.use('Agg')  # Use the Agg backend
     data_plot = []
     charts_params = [{'5m':'59d'},{'15m':'59d'},{'1h':'729d'},{'1d':'30000d'}]
     # Initialize the SGDRegressor model with appropriate parameters
